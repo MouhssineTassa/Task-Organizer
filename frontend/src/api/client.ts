@@ -99,8 +99,8 @@ export const uploadScheduleFile = (file: File, weekLabel?: string) => {
 };
 export const getScheduleDiff = (importId: number) =>
   api.get(`/schedule-import/${importId}/diff`).then((r) => r.data);
-export const confirmScheduleImport = (importId: number) =>
-  api.post(`/schedule-import/${importId}/confirm`).then((r) => r.data);
+export const confirmScheduleImport = (importId: number, entries?: DraftScheduleEntry[]) =>
+  api.post(`/schedule-import/${importId}/confirm`, { entries }).then((r) => r.data);
 export const getCurrentSchedule = () =>
   api.get<ScheduleEntry[]>("/schedule-import/current").then((r) => r.data);
 export const getScheduleHistory = () => api.get("/schedule-import/history").then((r) => r.data);

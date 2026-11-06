@@ -66,6 +66,7 @@ export function runMigrations() {
       created_at TEXT NOT NULL
     );
 
+    -- Métadonnées EDT ajoutées sans supprimer les anciennes données.
     CREATE TABLE IF NOT EXISTS tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -384,6 +385,18 @@ export function runMigrations() {
       updated_at TEXT NOT NULL
     );
   `);
+
+  // Colonnes ajoutées après le CREATE TABLE : compatibles avec les bases déjà existantes.
+  const scheduleColumns = sqlite.prepare(`PRAGMA table_info(schedule_entries)`).all() as Array<{ name: string }>;
+  const existingColumns = new Set(scheduleColumns.map((column) => column.name));
+  for (const [name, definition] of [
+    ["main_room", "TEXT"],
+    ["session_number", "TEXT"],
+    ["session_label", "TEXT"],
+  ] as const) {
+    if (!existingColumns.has(name)) sqlite.exec(`ALTER TABLE schedule_entries ADD COLUMN ${name} ${definition}`);
+  }
+
 
   // Rétrocompatibilité : ajoute les nouvelles colonnes sur une base déjà créée, sans rien casser.
   addColumnIfMissing("users", "password_hash", "TEXT");

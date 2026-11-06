@@ -85,6 +85,9 @@ export const scheduleEntries = sqliteTable("schedule_entries", {
   subjectName: text("subject_name").notNull(),
   teacher: text("teacher"),
   room: text("room"),
+  mainRoom: text("main_room"),
+  sessionNumber: text("session_number"),
+  sessionLabel: text("session_label"),
   type: text("type").notNull().default("Cours"), // Cours | TD | TP | Examen
   dayOfWeek: integer("day_of_week").notNull(), // 1 = Lundi ... 7 = Dimanche
   startTime: text("start_time").notNull(), // "08:15"

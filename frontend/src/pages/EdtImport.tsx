@@ -56,7 +56,7 @@ export default function EdtImport() {
     if (importId === null) return;
     setBusy(true);
     try {
-      await confirmScheduleImport(importId);
+      await confirmScheduleImport(importId, draft);
       setDraft([]);
       setImportId(null);
       setDiff(null);
@@ -146,6 +146,7 @@ export default function EdtImport() {
                   <th className="py-2 pr-2">Matière</th>
                   <th className="py-2 pr-2">Type</th>
                   <th className="py-2 pr-2">Salle</th>
+                  <th className="py-2 pr-2">Séance</th>
                   <th className="py-2 pr-2">Enseignant</th>
                   <th className="py-2 pr-2"></th>
                 </tr>
@@ -199,10 +200,19 @@ export default function EdtImport() {
                     </td>
                     <td className="py-2 pr-2">
                       <input
-                        value={e.room ?? ""}
-                        onChange={(ev) => updateEntry(i, { room: ev.target.value })}
+                        value={e.room ?? e.mainRoom ?? ""}
+                        onChange={(ev) => updateEntry(i, { room: ev.target.value || null })}
                         className="border border-slate-200 rounded px-2 py-1 text-xs w-24"
                       />
+                    </td>
+                    <td className="py-2 pr-2">
+                      <input
+                        value={e.sessionNumber ?? ""}
+                        onChange={(ev) => updateEntry(i, { sessionNumber: ev.target.value || null })}
+                        placeholder="16/22"
+                        className="border border-slate-200 rounded px-2 py-1 text-xs w-16"
+                      />
+                      <div className="text-[10px] text-slate-400 mt-1">{e.sessionLabel ?? ""}</div>
                     </td>
                     <td className="py-2 pr-2">
                       <input
@@ -240,8 +250,10 @@ export default function EdtImport() {
                     <div key={e.id} className="text-xs mb-2">
                       <p className="font-medium">{e.subject_name}</p>
                       <p className="text-slate-400">
-                        {e.start_time}–{e.end_time} · <Badge>{e.type}</Badge> {e.room ?? ""}
+                        {e.start_time}–{e.end_time} · <Badge>{e.type}</Badge> {e.room ?? e.main_room ?? ""} {e.session_number ? `· ${e.session_number}` : ""}
                       </p>
+                      {e.teacher && <p className="text-slate-400">{e.teacher}</p>}
+                      {e.session_label && <p className="text-slate-400">{e.session_label}</p>}
                     </div>
                   ))}
                 </div>

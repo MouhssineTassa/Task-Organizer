@@ -106,8 +106,13 @@ router.delete("/:id/draft/:index", (req, res) => {
 /** ÉTAPE 4 : confirmation définitive → remplace l'EDT actif par le brouillon validé. */
 router.post("/:id/confirm", (req, res) => {
   const importId = req.params.id;
-  const draft = draftCache.get(importId);
-  if (!draft) return res.status(404).json({ error: "Brouillon introuvable ou expiré. Ré-importez le PDF." });
+  const cachedDraft = draftCache.get(importId);
+  if (!cachedDraft) return res.status(404).json({ error: "Brouillon introuvable ou expiré. Ré-importez le PDF." });
+  // Les corrections effectuées dans le tableau frontend sont transmises à la confirmation.
+  const draft = Array.isArray(req.body?.entries) ? req.body.entries as ParsedScheduleEntry[] : cachedDraft;
+  if (draft.some((entry) => !entry.subjectName || !entry.startTime || !entry.endTime || entry.dayOfWeek < 1 || entry.dayOfWeek > 7)) {
+    return res.status(400).json({ error: "Le brouillon contient une séance invalide." });
+  }
 
   const now = new Date().toISOString();
 
@@ -115,11 +120,11 @@ router.post("/:id/confirm", (req, res) => {
     // On remplace l'EDT actif (l'historique du fichier PDF reste conservé dans schedule_imports/storage).
     sqlite.prepare(`DELETE FROM schedule_entries`).run();
     const stmt = sqlite.prepare(
-      `INSERT INTO schedule_entries (import_id, subject_name, teacher, room, type, day_of_week, start_time, end_time, locked, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`
+      `INSERT INTO schedule_entries (import_id, subject_name, teacher, room, main_room, session_number, session_label, type, day_of_week, start_time, end_time, locked, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`
     );
     for (const e of draft) {
-      stmt.run(importId, e.subjectName, e.teacher, e.room, e.type, e.dayOfWeek, e.startTime, e.endTime, now);
+      stmt.run(importId, e.subjectName, e.teacher, e.room ?? e.mainRoom, e.mainRoom, e.sessionNumber, e.sessionLabel, e.type, e.dayOfWeek, e.startTime, e.endTime, now);
     }
     sqlite.prepare(`UPDATE schedule_imports SET status = 'confirmed' WHERE id = ?`).run(importId);
   });

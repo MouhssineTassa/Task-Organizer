@@ -90,6 +90,9 @@ export interface ScheduleEntry {
   subject_name: string;
   teacher: string | null;
   room: string | null;
+  main_room: string | null;
+  session_number: string | null;
+  session_label: string | null;
   type: string;
   day_of_week: number;
   start_time: string;
@@ -133,6 +136,9 @@ export interface DraftScheduleEntry {
   subjectName: string;
   teacher: string | null;
   room: string | null;
+  mainRoom: string | null;
+  sessionNumber: string | null;
+  sessionLabel: string | null;
   type: string;
   dayOfWeek: number;
   startTime: string;
