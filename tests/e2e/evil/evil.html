@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>page hostile (test)</title>
+<iframe name="hidden_frame" style="display:none"></iframe>
+<script>
+// Simule un site malveillant (autre port de localhost = même "site" pour les cookies SameSite) qui vise l'API de l'utilisateur connecté.
+const T = "http://localhost:4000/api";
+const out = {};
+(async () => {
+  try { const r = await fetch(T + "/tasks", { credentials: "include" }); out.get = "READ " + r.status + " " + (await r.text()).slice(0, 60); }
+  catch (e) { out.get = "blocked"; }
+  try { const r = await fetch(T + "/tasks", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "X-PLOS": "1" }, body: JSON.stringify({ title: "EVIL" }) }); out.post_json = "SENT " + r.status; }
+  catch (e) { out.post_json = "blocked"; }
+  try { await fetch(T + "/tasks", { method: "POST", mode: "no-cors", credentials: "include", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ title: "EVIL" }) }); out.post_simple = "sent (opaque)"; }
+  catch (e) { out.post_simple = "blocked"; }
+  const f = document.createElement("form"); f.method = "POST"; f.action = T + "/tasks"; f.target = "hidden_frame";
+  const i = document.createElement("input"); i.name = "title"; i.value = "EVIL"; f.appendChild(i); document.body.appendChild(f); f.submit();
+  await new Promise((r) => setTimeout(r, 1500));
+  out.done = true; window.__out = out;
+})();
+</script>

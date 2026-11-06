@@ -1,0 +1,19 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Base de données locale et fichiers uploadés (générés à l'exécution)
+storage/*.db
+storage/*.db-*
+storage/pdf/*
+!storage/pdf/.gitkeep
+storage/study/*
+!storage/study/.gitkeep
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/exports/*
+!storage/exports/.gitkeep
+
+# Env
+.env.local
